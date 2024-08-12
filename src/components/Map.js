@@ -1,0 +1,33 @@
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const Map = ({ center, zoom, countries }) => {
+  const customIcon = L.divIcon({
+    html: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-red-500">
+        <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+      </svg>
+    `,
+    className: '',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+  });
+
+  return (
+    <MapContainer center={center} zoom={zoom} style={{ height: '400px', width: '100%', borderRadius: '0.5rem' }}>
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {countries.map(country => (
+        <Marker 
+          key={country.cca3} 
+          position={[country.latlng[0], country.latlng[1]]}
+          icon={customIcon}
+        >
+          <Popup>{country.name.common}</Popup>
+        </Marker>
+      ))}
+    </MapContainer>
+  );
+};
+
+export default Map;
