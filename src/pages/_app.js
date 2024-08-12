@@ -21,6 +21,10 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
+       <Head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="theme-color" content="#BFDBFE" />
+      </Head>
       {/* Global Site Tag (gtag.js) - Google Analytics */}
       <Script
         strategy="afterInteractive"
