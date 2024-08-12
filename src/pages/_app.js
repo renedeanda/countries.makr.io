@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { useRouter } from 'next/router';
 import 'leaflet/dist/leaflet.css';
 import '../styles/globals.css';
+import { Head } from "next/document";
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
