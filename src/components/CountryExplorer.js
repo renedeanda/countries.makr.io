@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X } from 'lucide-react';
+import { Search, X, ExternalLink } from 'lucide-react';
 
 // Dynamically import the Map component with ssr: false
 const Map = dynamic(() => import('./Map'), { ssr: false });
@@ -43,6 +43,10 @@ const CountryExplorer = () => {
     setSelectedCountries(selectedCountries.filter(c => c.cca3 !== country.cca3));
   };
 
+  const getWikipediaLink = (countryName) => {
+    return `https://en.wikipedia.org/wiki/${encodeURIComponent(countryName)}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100">
       <div className="container mx-auto p-4">
@@ -75,7 +79,7 @@ const CountryExplorer = () => {
             <CardContent>
               <div className="overflow-y-auto max-h-[400px] pr-2">
                 {filteredCountries.map(country => (
-                  <Card key={country.cca3} className="mb-4 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105" onClick={() => handleCountrySelect(country)}>
+                  <Card key={country.cca3} className="mb-4 hover:shadow-lg transition-all transform hover:scale-105">
                     <CardHeader className="flex flex-row items-center p-4">
                       <div className="relative w-12 h-8 mr-4">
                         <Image src={country.flags.svg} alt={`${country.name.common} flag`} layout="fill" objectFit="contain" />
@@ -87,6 +91,19 @@ const CountryExplorer = () => {
                       <p><strong>Population:</strong> {country.population.toLocaleString()}</p>
                       <p><strong>Region:</strong> {country.region}</p>
                     </CardContent>
+                    <CardFooter className="flex justify-between items-center">
+                      <Button variant="outline" onClick={() => handleCountrySelect(country)}>
+                        Add to Comparison
+                      </Button>
+                      <a 
+                        href={getWikipediaLink(country.name.common)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-700 flex items-center"
+                      >
+                        Learn More <ExternalLink size={16} className="ml-1" />
+                      </a>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>
@@ -123,6 +140,16 @@ const CountryExplorer = () => {
                       <p><strong>Languages:</strong> {Object.values(country.languages || {}).join(', ')}</p>
                       <p><strong>Currencies:</strong> {Object.values(country.currencies || {}).map(c => c.name).join(', ')}</p>
                     </CardContent>
+                    <CardFooter>
+                      <a 
+                        href={getWikipediaLink(country.name.common)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-700 flex items-center"
+                      >
+                        Learn More <ExternalLink size={16} className="ml-1" />
+                      </a>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>
