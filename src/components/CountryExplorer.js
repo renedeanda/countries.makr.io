@@ -83,7 +83,7 @@ const CountryExplorer = () => {
           </p>
         </header>
         
-        <div className="relative mb-6" ref={searchRef}>
+        <div className="relative mb-6 z-50" ref={searchRef}>
           <Input
             type="text"
             placeholder="Search for a country..."
@@ -92,7 +92,7 @@ const CountryExplorer = () => {
             className="w-full shadow-sm"
           />
           {showDropdown && searchTerm && (
-            <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
               {filteredCountries.map(country => (
                 <div
                   key={country.cca3}
