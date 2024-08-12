@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,16 +15,30 @@ const CountryExplorer = () => {
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     fetch('https://restcountries.com/v3.1/all')
       .then(response => response.json())
       .then(data => setCountries(data))
       .catch(error => console.error('Error fetching countries:', error));
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
+
+  const handleClickOutside = (event) => {
+    if (searchRef.current && !searchRef.current.contains(event.target)) {
+      setShowDropdown(false);
+    }
+  };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
+    setShowDropdown(true);
   };
 
   const filteredCountries = countries.filter(country =>
@@ -37,6 +51,8 @@ const CountryExplorer = () => {
       setMapCenter([country.latlng[0], country.latlng[1]]);
       setMapZoom(4);
     }
+    setSearchTerm('');
+    setShowDropdown(false);
   };
 
   const handleCountryRemove = (country) => {
@@ -51,10 +67,10 @@ const CountryExplorer = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100">
       <div className="container mx-auto p-4">
         <header className="text-center py-8">
-          <h1 className="text-5xl sm:text-5xl md:text-6xl font-bold mb-8 text-center text-blue-600 drop-shadow-md animate-fade-in-down">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-center text-blue-600 drop-shadow-md animate-fade-in-down">
             <span className="inline-block animate-bounce">🌎</span> Country Explorer
           </h1>
-          <p className="text-lg text-gray-700">
+          <p className="text-sm sm:text-base md:text-lg text-gray-700">
             Crafted with <span className="text-red-500 animate-pulse inline-block">❤️</span> and <span role="img" aria-label="AI">🤖</span> by{' '}
             <a
               href="https://renedeanda.com/?utm_source=countries"
@@ -66,25 +82,37 @@ const CountryExplorer = () => {
             </a>
           </p>
         </header>
-        <div className="text-center py-4">
-
-        </div>
-        <div className="flex mb-6">
+        
+        <div className="relative mb-6" ref={searchRef}>
           <Input
             type="text"
             placeholder="Search for a country..."
             value={searchTerm}
             onChange={handleSearch}
-            className="flex-grow mr-2 shadow-sm"
+            className="w-full shadow-sm"
           />
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm">
-            <Search className="mr-2" /> Search
-          </Button>
+          {showDropdown && searchTerm && (
+            <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+              {filteredCountries.map(country => (
+                <div
+                  key={country.cca3}
+                  className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                  onClick={() => handleCountrySelect(country)}
+                >
+                  <div className="relative w-8 h-6 mr-2">
+                    <Image src={country.flags.svg} alt={`${country.name.common} flag`} layout="fill" objectFit="contain" />
+                  </div>
+                  <span>{country.name.common}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-gray-800">World Map</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl font-semibold text-gray-800">World Map</CardTitle>
             </CardHeader>
             <CardContent>
               <Map center={mapCenter} zoom={mapZoom} countries={selectedCountries} />
@@ -92,7 +120,7 @@ const CountryExplorer = () => {
           </Card>
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-gray-800">Countries</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl font-semibold text-gray-800">Countries</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-y-auto max-h-[400px] pr-2">
@@ -102,15 +130,15 @@ const CountryExplorer = () => {
                       <div className="relative w-12 h-8 mr-4">
                         <Image src={country.flags.svg} alt={`${country.name.common} flag`} layout="fill" objectFit="contain" />
                       </div>
-                      <CardTitle className="text-xl">{country.name.common}</CardTitle>
+                      <CardTitle className="text-lg sm:text-xl">{country.name.common}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
                       <p><strong>Capital:</strong> {country.capital?.[0] || 'N/A'}</p>
                       <p><strong>Population:</strong> {country.population.toLocaleString()}</p>
                       <p><strong>Region:</strong> {country.region}</p>
                     </CardContent>
-                    <CardFooter className="flex justify-between items-center">
-                      <Button variant="outline" onClick={() => handleCountrySelect(country)}>
+                    <CardFooter className="flex justify-between items-center flex-wrap">
+                      <Button variant="outline" onClick={() => handleCountrySelect(country)} className="mb-2 sm:mb-0">
                         Add to Comparison
                       </Button>
                       <a
@@ -131,10 +159,10 @@ const CountryExplorer = () => {
         {selectedCountries.length > 0 && (
           <Card className="mt-8 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-gray-800">Country Comparison</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl font-semibold text-gray-800">Country Comparison</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedCountries.map(country => (
                   <Card key={country.cca3} className="relative overflow-hidden shadow-md hover:shadow-xl transition-shadow">
                     <Button
@@ -144,7 +172,7 @@ const CountryExplorer = () => {
                       <X size={16} />
                     </Button>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-xl flex items-center">
+                      <CardTitle className="text-lg sm:text-xl flex items-center">
                         <div className="relative w-8 h-6 mr-2">
                           <Image src={country.flags.svg} alt={`${country.name.common} flag`} layout="fill" objectFit="contain" />
                         </div>
