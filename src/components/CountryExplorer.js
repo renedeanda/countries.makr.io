@@ -50,7 +50,25 @@ const CountryExplorer = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100">
       <div className="container mx-auto p-4">
-        <h1 className="text-5xl font-bold mb-8 text-center text-blue-600 drop-shadow-md">🌎 Country Explorer</h1>
+        <header className="text-center py-8">
+          <h1 className="text-5xl sm:text-5xl md:text-6xl font-bold mb-8 text-center text-blue-600 drop-shadow-md animate-fade-in-down">
+            <span className="inline-block animate-bounce">🌎</span> Country Explorer
+          </h1>
+          <p className="text-lg text-gray-700">
+            Crafted with <span className="text-red-500 animate-pulse inline-block">❤️</span> and <span role="img" aria-label="AI">🤖</span> by{' '}
+            <a
+              href="https://renedeanda.com/?utm_source=countries"
+              className="text-blue-600 hover:text-blue-800 transition-colors duration-300 font-medium hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              René DeAnda
+            </a>
+          </p>
+        </header>
+        <div className="text-center py-4">
+
+        </div>
         <div className="flex mb-6">
           <Input
             type="text"
@@ -95,9 +113,9 @@ const CountryExplorer = () => {
                       <Button variant="outline" onClick={() => handleCountrySelect(country)}>
                         Add to Comparison
                       </Button>
-                      <a 
-                        href={getWikipediaLink(country.name.common)} 
-                        target="_blank" 
+                      <a
+                        href={getWikipediaLink(country.name.common)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:text-blue-700 flex items-center"
                       >
@@ -119,7 +137,7 @@ const CountryExplorer = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedCountries.map(country => (
                   <Card key={country.cca3} className="relative overflow-hidden shadow-md hover:shadow-xl transition-shadow">
-                    <Button 
+                    <Button
                       className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 p-0 flex items-center justify-center shadow-md"
                       onClick={() => handleCountryRemove(country)}
                     >
@@ -141,9 +159,9 @@ const CountryExplorer = () => {
                       <p><strong>Currencies:</strong> {Object.values(country.currencies || {}).map(c => c.name).join(', ')}</p>
                     </CardContent>
                     <CardFooter>
-                      <a 
-                        href={getWikipediaLink(country.name.common)} 
-                        target="_blank" 
+                      <a
+                        href={getWikipediaLink(country.name.common)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:text-blue-700 flex items-center"
                       >
