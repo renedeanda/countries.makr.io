@@ -16,13 +16,54 @@ const CountryExplorer = () => {
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const searchRef = useRef(null);
 
   useEffect(() => {
-    fetch('https://restcountries.com/v3.1/all')
-      .then(response => response.json())
-      .then(data => setCountries(data))
-      .catch(error => console.error('Error fetching countries:', error));
+    setLoading(true);
+    setError(null);
+
+    // Use fields parameter for better performance and reliability
+    const fields = 'name,capital,population,region,flags,area,languages,currencies,latlng,cca3';
+    const primaryApiUrl = `https://restcountries.com/v3.1/all?fields=${fields}`;
+
+    // Fallback API option (GitHub-hosted mirror)
+    const fallbackApiUrl = 'https://restcountries.com/v3.1/all';
+
+    const fetchCountries = async (url, isFallback = false) => {
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format');
+        }
+
+        setCountries(data);
+        setLoading(false);
+      } catch (error) {
+        console.error(`Error fetching from ${isFallback ? 'fallback' : 'primary'} API:`, error);
+
+        // Try fallback if primary fails
+        if (!isFallback) {
+          console.log('Attempting fallback API...');
+          fetchCountries(fallbackApiUrl, true);
+        } else {
+          // Both APIs failed
+          setError(`Unable to load country data. Please try again later. (${error.message})`);
+          setCountries([]);
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCountries(primaryApiUrl);
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -41,9 +82,11 @@ const CountryExplorer = () => {
     setShowDropdown(true);
   };
 
-  const filteredCountries = countries.filter(country =>
-    country.name.common.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCountries = Array.isArray(countries)
+    ? countries.filter(country =>
+        country?.name?.common?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   const handleCountrySelect = (country) => {
     if (!selectedCountries.find(c => c.cca3 === country.cca3)) {
@@ -82,14 +125,30 @@ const CountryExplorer = () => {
             </a>
           </p>
         </header>
-        
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            <p className="font-semibold">⚠️ Error Loading Countries</p>
+            <p className="text-sm mt-1">{error}</p>
+            <p className="text-sm mt-2">Please try refreshing the page or check back later.</p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-md text-center">
+            <p className="font-semibold">🌍 Loading countries...</p>
+            <p className="text-sm mt-1">Please wait while we fetch the data.</p>
+          </div>
+        )}
+
         <div className="relative mb-6" ref={searchRef}>
           <Input
             type="text"
-            placeholder="Search for a country..."
+            placeholder={loading ? "Loading countries..." : error ? "Unable to load countries" : "Search for a country..."}
             value={searchTerm}
             onChange={handleSearch}
             className="w-full shadow-sm"
+            disabled={loading || error}
           />
           {showDropdown && searchTerm && (
             <div className="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto" style={{ zIndex: 9999 }}>
@@ -124,6 +183,11 @@ const CountryExplorer = () => {
             </CardHeader>
             <CardContent>
               <div className="overflow-y-auto max-h-[400px] pr-2">
+                {filteredCountries.length === 0 && !loading && !error && (
+                  <p className="text-center text-gray-500 py-8">
+                    {searchTerm ? 'No countries found matching your search.' : 'No countries available.'}
+                  </p>
+                )}
                 {filteredCountries.map(country => (
                   <Card key={country.cca3} className="mb-4 hover:shadow-lg transition-all transform hover:scale-105">
                     <CardHeader className="flex flex-row items-center p-4">

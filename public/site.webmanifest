@@ -1,0 +1,17 @@
+{
+  "name": "Country Explorer",
+  "short_name": "Countries",
+  "description": "Explore and compare countries around the world",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#BFDBFE",
+  "theme_color": "#1E3A8A",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
