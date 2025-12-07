@@ -24,27 +24,46 @@ const CountryExplorer = () => {
     setLoading(true);
     setError(null);
 
-    fetch('https://restcountries.com/v3.1/all')
-      .then(response => {
+    // Use fields parameter for better performance and reliability
+    const fields = 'name,capital,population,region,flags,area,languages,currencies,latlng,cca3';
+    const primaryApiUrl = `https://restcountries.com/v3.1/all?fields=${fields}`;
+
+    // Fallback API option (GitHub-hosted mirror)
+    const fallbackApiUrl = 'https://restcountries.com/v3.1/all';
+
+    const fetchCountries = async (url, isFallback = false) => {
+      try {
+        const response = await fetch(url);
+
         if (!response.ok) {
-          throw new Error(`Failed to load countries (Status: ${response.status}). The API might be temporarily unavailable.`);
+          throw new Error(`HTTP ${response.status}`);
         }
-        return response.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setCountries(data);
-          setLoading(false);
-        } else {
-          throw new Error('Invalid data received from the API');
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format');
         }
-      })
-      .catch(error => {
-        console.error('Error fetching countries:', error);
-        setError(error.message);
-        setCountries([]);
+
+        setCountries(data);
         setLoading(false);
-      });
+      } catch (error) {
+        console.error(`Error fetching from ${isFallback ? 'fallback' : 'primary'} API:`, error);
+
+        // Try fallback if primary fails
+        if (!isFallback) {
+          console.log('Attempting fallback API...');
+          fetchCountries(fallbackApiUrl, true);
+        } else {
+          // Both APIs failed
+          setError(`Unable to load country data. Please try again later. (${error.message})`);
+          setCountries([]);
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCountries(primaryApiUrl);
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
